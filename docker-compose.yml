@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: task-manager-app
+    volumes:
+      - .:/var/www/html
+      - ./docker/apache/task-manager.conf:/etc/apache2/sites-available/task-manager.conf
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+      - node
+
+  db:
+    image: mariadb:10.6
+    container_name: task-manager-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: task_manager
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: task-manager-phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+
+  node:
+    image: node:22.12.0
+    container_name: task-manager-node
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    # Keeps the container running so you can run npm commands
+    command: tail -f /dev/null
+
+volumes:
+  db-data:
