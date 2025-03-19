@@ -1,21 +1,39 @@
 #!/bin/bash
+set -e
 
-# Stop and remove existing containers
-docker-compose down
+# Clean existing containers
+docker-compose down -v || true
 
-# Build and start containers
+# Build and start
 docker-compose up -d --build
 
 # Install PHP dependencies
-docker exec -it task-manager-app composer install
+docker-compose exec app composer install --no-interaction
 
-# Install Node dependencies
-docker exec -it task-manager-node npm install
+# Environment setup
+if [ ! -f .env ]; then
+  cp .env.example .env
+fi
+docker-compose exec app php artisan key:generate
 
-# Set permissions
-docker exec -it task-manager-app chmod -R 775 storage bootstrap/cache
+# Wait for database
+echo "Waiting for database..."
+while ! docker-compose exec db mysqladmin ping --silent; do
+  sleep 2
+done
 
-# Run migrations
-docker exec -it task-manager-app php artisan migrate --seed
+# Database setup
+docker-compose exec app php artisan migrate --seed
 
-echo "Setup completed successfully!"
+
+# Frontend setup
+docker-compose exec node npm install
+docker-compose exec node npm run build
+
+# Permissions (final fix)
+docker-compose exec app chown -R www-data:www-data /var/www/html/storage
+docker-compose exec app chmod -R 775 /var/www/html/storage
+
+echo "Jetstream fully configured!"
+echo "- App: http://localhost:8000"
+echo "- PHPMyAdmin: http://localhost:8080"
