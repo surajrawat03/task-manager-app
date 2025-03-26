@@ -34,6 +34,8 @@ auth.json
 /public/build
 /public/hot
 /public/storage
+/public/css/app.css
+/public/js/app.js
 
 # IDE specific files
 .idea/
