@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto flex justify-center my-8 items-center">
         <div class="w-1/2 p-4">
-            <div class="mt-5 md:mt-0 px-4 py-5 bg-white sm:p-6">
+            <div class="mt-5 md:mt-0 px-4 py-5 sm:p-6 bg-white">
                 <div class="px-4 sm:px-0">
                     <h3 class="text-lg font-medium leading-6 text-gray-900">Create New Task</h3>
                     <p class="mt-1 text-sm text-gray-600">
@@ -27,11 +27,13 @@
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
-    
-                                <div class="col-span-6 sm:col-span-3">
+                                {{-- <div class="col-span-6 sm:col-span-3">
                                     <label for="team_id" class="block text-sm font-medium text-gray-700">Team</label>
                                     <select id="team_id" name="team_id" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                         <option value="">Select Team</option>
+                                        @foreach (Auth::user()->allTeams() as $item)
+                                            <option value="{{$item->id}}">{{$item->name}}</option>
+                                        @endforeach
                                     </select>
                                     @error('team_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -46,8 +48,11 @@
                                     @error('assignee_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
-                                </div>
-    
+                                </div> --}}
+                                    <!-- Add Livewire component -->
+                                {{-- <div class="col-span-6 grid grid-cols-6 gap-6"> --}}
+                                    <livewire:team-user-dropdown />
+                                {{-- </div> --}}
                                 <div class="col-span-6 sm:col-span-3">
                                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                                     <select id="status" name="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
