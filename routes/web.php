@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +27,5 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('tasks/create-task', function () {
-        return view('tasks.create-task');
-    })->name('create-task');
+    Route::resource('tasks', TaskController::class);
 });
