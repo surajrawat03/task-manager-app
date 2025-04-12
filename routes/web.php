@@ -27,5 +27,5 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('tasks/create-task', [TaskController::class, 'create'])->name('create-task');
+    Route::resource('tasks', TaskController::class);
 });
