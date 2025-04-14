@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TaskAssigned;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -15,7 +18,7 @@ class TaskController extends Controller
 	public function index(Request $request)
 	{
 		$query = Task::query();
-
+		
 		foreach ($request->all() as $key => $value) {
 			if (empty($value)) continue; // Skip empty inputs
 
@@ -30,6 +33,20 @@ class TaskController extends Controller
 					$query->where('title', 'like', "%$value%");
 					break;
 			}
+		}
+
+
+		$user = auth()->user();
+		$ownedTeamIds = $user->ownedTeams->pluck('id');
+
+		if ($ownedTeamIds->isNotEmpty()) {
+			$query->where(function ($q) use ($user, $ownedTeamIds) {
+				$q->where('user_id', $user->id)
+				  ->orWhereIn('team_id', $ownedTeamIds);
+			});
+
+		} else {
+			$query->orWhereIn('team_id', $ownedTeamIds);
 		}
 
 		$tasks = $query->with('user') // Eager load the assigned user
@@ -67,10 +84,20 @@ class TaskController extends Controller
 			'priority'    => 'required|string',
 		]);
 
-		// Create the task
-		Task::create($data);
+		// try {
+		// 	// dd($data);
+		// 	DB::beginTransaction();
+			// Create the task
+			$task = Task::create($data);
 
-		return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+			Mail::to($task->user->email)->send(new TaskAssigned($task));
+			return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+		// } catch (\Exception $e) {
+		// 		DB::roolBack();
+		// 		Log::error('Task creation/email failed: ' . $e->getMessage());
+
+		// 		return redirect()->back()->withInput()->with('error', 'Something went wrong. Task not created.');
+		// }
 	}
 
 	/**
